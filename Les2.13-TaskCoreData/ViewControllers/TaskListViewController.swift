@@ -56,9 +56,7 @@ class TaskListViewController: UITableViewController {
 
 //    реализация действия кнопки
     @objc private func addNewTask() {
-        let taskVC = TaskViewController()
-        taskVC.delegate = self
-        present(taskVC, animated: true)
+       showAlert(with: "New Task", and: "What do you want to do?")
     }
     
     private func fetchData() {
@@ -69,7 +67,32 @@ class TaskListViewController: UITableViewController {
             print(error)
         }
     }
+        
+    // MARK: - Alert Controller
+    private func showAlert(with title:String, and message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
+            guard let task = alert.textFields?.first?.text, !task.isEmpty else { return }
+            self.save(task)
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
+        alert.addAction(saveAction)
+        alert.addAction(cancelAction)
+        alert.addTextField { textField in
+            textField.placeholder = "New TasK"
+        }
+        present(alert, animated: true)
+    }
     
+    private func save(_ taskName: String) {
+        guard let entityDiscription = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
+        guard let task = NSManagedObject(entity: entityDiscription, insertInto: context) as? Task else { return }
+        task.title = taskName   // проверить не пустой ли - передавать только если содержаться данные
+        taskList.append(task)
+        
+        let cellIndex = IndexPath(row: taskList.count - 1, section: 0)
+        tableView.insertRows(at: [cellIndex], with: .automatic)
+    }
 }
 
 // MARK: - UITableViewDataSource
