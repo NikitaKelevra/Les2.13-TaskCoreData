@@ -6,8 +6,11 @@
 //
 
 import UIKit
+import CoreData
 
 class TaskViewController: UIViewController {
+    
+    var delegate: TaskViewControllerDelegate?
     
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -80,7 +83,18 @@ class TaskViewController: UIViewController {
     
     
     @objc private func save() {
+        guard let entityDiscription = NSEntityDescription.entity(forEntityName: "Task", in: context) else { return }
+        guard let task = NSManagedObject(entity: entityDiscription, insertInto: context) as? Task else { return }
+        task.title = taskTextField.text   // проверить не пустой ли - передавать только если содержаться данные
         
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch let error {
+                print(error.localizedDescription)
+            }
+        }
+        delegate?.reloadData()
         dismiss(animated: true)
     }
     
@@ -89,4 +103,4 @@ class TaskViewController: UIViewController {
     }
 }
 
-//1:47
+
